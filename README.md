@@ -20,7 +20,7 @@ During generation, a forward hook adds `coeff * steering_vector` to the residual
 
 ## Scripts
 
-Both scripts require `HF_TOKEN` in a `.env` file for gated models (like Llama 3).
+All scripts require `HF_TOKEN` in a `.env` file for gated models (like Llama 3).
 
 ### `main.py` — Quick demo
 
@@ -30,23 +30,24 @@ A minimal proof-of-concept. Computes one steering vector at a fixed layer (16) a
 uv run main.py
 ```
 
-### `sweep.py` — Systematic parameter sweep
+### `sweep/sweep.py` — Love/Hate sentiment sweep
 
-Builds on `main.py` to answer: **which layer and coefficient give the best steering?** Instead of one fixed configuration, it sweeps over a grid of (layer, coefficient) pairs and uses a sentiment classifier to quantitatively measure the effect. This tells you where in the model's depth the Love/Hate distinction is most manipulable, and how much to scale the vector before it degrades coherence.
+Sweeps over a grid of (layer, coefficient) pairs using a "Love" vs "Hate" steering vector, measuring the effect with a sentiment classifier. See `sweep/RESULTS.md` for detailed findings.
 
-**Parameters swept:**
-- **Layers**: 0, 2, 4, ..., 30 (every 2nd layer, 16 total)
-- **Coefficients**: 0.01, 0.05, 0.1, 0.5, 1.0, 2.0, 5.0, 10.0
-- **Test prompts**: 5 diverse prompts to check generalization
-
-**Evaluation metric:** Sentiment score via [cardiffnlp/twitter-roberta-base-sentiment-latest](https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment-latest), mapped to [-1, +1] (negative to positive). Each (layer, coeff) cell is the average sentiment across all test prompts, compared against a no-steering baseline.
-
-**Outputs:**
-- `sweep_heatmap.png` — layer × coefficient heatmap colored by sentiment
-- `sweep_results.json` — all generated text and scores for every combination
+**Outputs** (in `sweep/`): `heatmap.png`, `results.json`
 
 ```bash
-uv run sweep.py
+cd sweep && uv run sweep.py
+```
+
+### `sweep_ispal/sweep.py` — Israel/Palestine perspective sweep
+
+Uses steering vectors to shift the framing of conflict-related news text between pro-Israel and pro-Palestine perspectives. Evaluated with zero-shot classification (`facebook/bart-large-mnli`).
+
+**Outputs** (in `sweep_ispal/`): `heatmap.png`, `results.json`
+
+```bash
+cd sweep_ispal && uv run sweep.py
 ```
 
 ## Ideas for further experiments
@@ -54,5 +55,5 @@ uv run sweep.py
 - **Different concept pairs**: happy/sad, formal/casual, truthful/deceptive, creative/boring
 - **Multi-token prompts**: Use full sentences like "I feel love and warmth" vs "I feel hate and anger" for richer representations
 - **Contrastive Activation Addition (CAA)**: Average steering vectors across many prompt pairs for a more robust direction
-- **Negative coefficients**: Steer in the reverse direction (toward "Hate")
+- **Negative coefficients**: Steer in the reverse direction
 - **Perplexity tracking**: Monitor whether steering degrades output quality

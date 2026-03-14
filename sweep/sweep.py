@@ -193,9 +193,9 @@ def main():
         "baselines": {k: v for k, v in baselines.items()},
         "all_outputs": all_outputs,
     }
-    with open("sweep_results.json", "w") as f:
+    with open("results.json", "w") as f:
         json.dump(sweep_data, f, indent=2)
-    print("  Saved sweep_results.json")
+    print("  Saved results.json")
 
     # --- Plot heatmap ---
     fig, ax = plt.subplots(figsize=(10, 8))
@@ -220,8 +220,8 @@ def main():
 
     plt.colorbar(im, label="Sentiment (-1=neg, +1=pos)")
     plt.tight_layout()
-    plt.savefig("sweep_heatmap.png", dpi=150)
-    print("  Saved sweep_heatmap.png")
+    plt.savefig("heatmap.png", dpi=150)
+    print("  Saved heatmap.png")
     plt.close()
 
     # --- Summary ---
@@ -243,7 +243,7 @@ def main():
         best_j = np.argmax(results[i])
         print(f"    Layer {layer:>2d}: coeff={COEFFS[best_j]:<5} -> sentiment {results[i, best_j]:+.3f} (shift {shifts[i, best_j]:+.3f})")
 
-    print(f"\n  Output files: sweep_results.json, sweep_heatmap.png")
+    print(f"\n  Output files: results.json, heatmap.png")
     print(f"{'=' * 70}\n")
 
 
